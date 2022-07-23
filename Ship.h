@@ -18,4 +18,3 @@ public:
 	sf::ConvexShape* getDrawable();
 };
 
-

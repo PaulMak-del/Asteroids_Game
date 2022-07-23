@@ -147,4 +147,3 @@ bool Game::isRuning()
     return _window->isOpen();
 }
 
-
