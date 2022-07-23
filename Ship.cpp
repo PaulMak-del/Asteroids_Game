@@ -37,3 +37,4 @@ void Ship::setRotation(sf::Angle angle) {
 sf::ConvexShape* Ship::getDrawable() {
     return &_ship;
 }
+
