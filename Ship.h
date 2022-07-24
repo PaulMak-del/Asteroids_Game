@@ -3,18 +3,16 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
-class Ship 
+class Ship : public sf::Drawable, public sf::Transformable
 {
 private:
 	sf::ConvexShape _ship;
 	float _speed;
 	float _size;
+
+	void draw(sf::RenderTarget& target, const sf::RenderStates& states) const override;
 public:
 	Ship();
 	void move(sf::Vector2f dir);
-	void setPosition(sf::Vector2f vec);
-	sf::Vector2f getPosition();
-	void setRotation(sf::Angle angle);
-	sf::ConvexShape* getDrawable();
 };
 

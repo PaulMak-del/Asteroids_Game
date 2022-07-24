@@ -11,10 +11,12 @@ enum GameState {
 	GAME_OVER
 };
 
+const float SPEED = 5.f;
+
 class Game
 {
 private: 
-	sf::RenderWindow* _window;
+	sf::RenderWindow _window;
 public:
 	GameState state;
 

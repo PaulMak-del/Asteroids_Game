@@ -3,33 +3,21 @@
 #include <SFML/Graphics.hpp>
 
 enum AST_SIZE {
-	LARGE = 7,
-	MEDIUM = 4,
-	SMALL = 2,
-	NONE = 1
+	LARGE,
+	MEDIUM,
+	SMALL
 };
 
-class Asteroid
+class Asteroid : public sf::Drawable, sf::Transformable
 {
 private:
-	//Variables
-	sf::ConvexShape _asteroid;
-	AST_SIZE _size;
-	size_t _points;
-	sf::Vector2f _dir;
-	float _speed;
+	sf::ConvexShape _ast;
 
-	//Functions
-	void generate();
- public:
+	virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
+public:
 	Asteroid(AST_SIZE size);
-	AST_SIZE destroy();
-	void setSize(AST_SIZE size);
-	AST_SIZE getSize();
-	void move();
+	~Asteroid() override;
 
-	sf::ConvexShape getDrawable();
-	void setPosition(sf::Vector2f vec);
-	sf::Vector2f getPosition();
+	void generate();
 };
 

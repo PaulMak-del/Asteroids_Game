@@ -3,6 +3,13 @@
 
 #define DEBUG
 
+void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
+{
+    sf::RenderStates statesCopy(states);
+    statesCopy.transform = getTransform();
+    target.draw(_ship, statesCopy);
+}
+
 Ship::Ship() {
     _size = 5;
     _ship.setPointCount(4);
@@ -17,23 +24,7 @@ Ship::Ship() {
 
     _speed = 5;
 }
-
 void Ship::move(sf::Vector2f dir) {
-    _ship.move(sf::Vector2f(dir.x * _speed, dir.y * _speed));
+    this->sf::Transformable::move(sf::Vector2f(dir.x * _speed, dir.y * _speed));
 }
 
-void Ship::setPosition(sf::Vector2f vec) {
-    _ship.setPosition(vec);
-}
-
-sf::Vector2f Ship::getPosition() {
-    return _ship.getPosition();
-}
-
-void Ship::setRotation(sf::Angle angle) {
-    _ship.setRotation(angle);
-}
-
-sf::ConvexShape* Ship::getDrawable() {
-    return &_ship;
-}
