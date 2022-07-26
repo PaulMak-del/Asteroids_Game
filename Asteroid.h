@@ -3,21 +3,24 @@
 #include <SFML/Graphics.hpp>
 
 enum AST_SIZE {
-	LARGE,
-	MEDIUM,
-	SMALL
+	LARGE = 7,
+	MEDIUM = 4,
+	SMALL = 2
 };
 
-class Asteroid : public sf::Drawable, sf::Transformable
+class Asteroid : public sf::Drawable, public sf::Transformable
 {
 private:
 	sf::ConvexShape _ast;
+	sf::Vector2f _dir;
+	float _speed;
 
 	virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
+	void generate();
 public:
 	Asteroid(AST_SIZE size);
 	~Asteroid() override;
 
-	void generate();
+	void move();
 };
 

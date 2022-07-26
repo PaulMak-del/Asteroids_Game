@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Ship.h"
 #include "Asteroid.h"
+#include "AstManagement.h"
 
 #define DEBUG
 
@@ -34,6 +35,16 @@ void Game::game_run()
     //Создание объектов игры
     Ship ship;
     ship.setPosition(sf::Vector2f(_window.getPosition().x / 2.0f, _window.getPosition().y / 2.0f));
+
+    std::vector<Asteroid*> ast;
+    AstManagement astManager = AstManagement();
+    ast.push_back(astManager.create(LARGE));
+    ast.push_back(astManager.create(MEDIUM));
+    ast.push_back(astManager.create(SMALL));
+
+    ast[0]->setPosition(sf::Vector2f(400, 400));
+    ast[1]->setPosition(sf::Vector2f(500, 500));
+    ast[2]->setPosition(sf::Vector2f(600, 600));
     //======================
 
     while (_window.isOpen())
@@ -55,30 +66,31 @@ void Game::game_run()
         if (shipPos.y < 0) {
             ship.setPosition(sf::Vector2f(shipPos.x, float(_window.getSize().y)));
         }
-        /*
+
         //для астероидов (выглядит ужасно, потом перелаешь)
         const float magicOffset = 5;
-        for (auto el : ast) {
-            if (el->getPosition().x < 0 - el->getSize() * magicOffset ) {
-                el->setPosition(sf::Vector2f(float(_window.getSize().x + el->getSize() * magicOffset), el->getPosition().y));
+        for (int i = 0; i < ast.size(); ++i) {
+            Asteroid* el = ast[i];
+            if (el->getPosition().x < 0 - el->getScale().x * magicOffset) {
+                el->setPosition(sf::Vector2f(float(_window.getSize().x + el->getScale().x * magicOffset), el->getPosition().y));
             }
-            if (el->getPosition().y < 0 - el->getSize() * magicOffset) {
-                el->setPosition(sf::Vector2f(el->getPosition().x, float(_window.getSize().y + el->getSize() * magicOffset)));
+            if (el->getPosition().y < 0 - el->getScale().x * magicOffset) {
+                el->setPosition(sf::Vector2f(el->getPosition().x, float(_window.getSize().y + el->getScale().x * magicOffset)));
             }
-            if (el->getPosition().x > _window.getSize().x + el->getSize() * magicOffset ) {
-                el->setPosition(sf::Vector2f(float(el->getSize() * -magicOffset ), el->getPosition().y));
+            if (el->getPosition().x > _window.getSize().x + el->getScale().x * magicOffset ) {
+                el->setPosition(sf::Vector2f(float(el->getScale().x * -magicOffset ), el->getPosition().y));
             }
-            if (el->getPosition().y > _window.getSize().y + el->getSize() * magicOffset ) {
-                el->setPosition(sf::Vector2f(el->getPosition().x, float(el->getSize() * -magicOffset )));
+            if (el->getPosition().y > _window.getSize().y + el->getScale().x * magicOffset ) {
+                el->setPosition(sf::Vector2f(el->getPosition().x, float(el->getScale().x * -magicOffset )));
             }
         }
         //ПОЛЁТ АСТЕРОИДОВ
         for (auto el : ast) {
             el->move();
         }
-        */
-        //РАЗРУШЕНИЕ АСТЕРОИДОВ
 
+        //РАЗРУШЕНИЕ АСТЕРОИДОВ
+        
         //===========================
 
         sf::Event event;
@@ -96,11 +108,25 @@ void Game::game_run()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             ship.move(dir);
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+            for (int i = 0; i < ast.size(); ++i) {
+                Asteroid* p = ast[1];
+                if (ast[i] == p) {
+                    ast.erase(ast.begin() + i);
+                }
+            }
+        }
 
 
         _window.clear();
         _window.draw(ship);
+        for (int i = 0; i < ast.size(); ++i) {
+            _window.draw(*ast[i]);
+        }
         _window.display();
+    }
+    for (int i = 0; i < ast.size(); ++i) {
+        delete ast[i];
     }
 }
 
