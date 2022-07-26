@@ -108,14 +108,6 @@ void Game::game_run()
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
             ship.move(dir);
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-            for (int i = 0; i < ast.size(); ++i) {
-                Asteroid* p = ast[1];
-                if (ast[i] == p) {
-                    ast.erase(ast.begin() + i);
-                }
-            }
-        }
 
 
         _window.clear();
