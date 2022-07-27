@@ -3,6 +3,25 @@
 
 #define DEBUG
 
+Bullet::Bullet() {
+#ifdef DEBUG
+    std::cout << "Bullet::Bullet() -> " << this << "\n";
+#endif
+}
+
+Bullet::Bullet(const sf::CircleShape& shape, const sf::Vector2f& direction) 
+    : bul(shape), dir(direction) {
+#ifdef DEBUG
+    std::cout << "Bullet::Bullet() -> " << this << "\n";
+#endif
+}
+
+Bullet::~Bullet() {
+#ifdef DEBUG
+    std::cout << "Bullet::~Bullet() -> " << this << "\n";
+#endif
+}
+
 void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 {
     sf::RenderStates statesCopy(states);
@@ -24,7 +43,25 @@ Ship::Ship() {
 
     _speed = 5;
 }
+
 void Ship::move(sf::Vector2f dir) {
     this->sf::Transformable::move(sf::Vector2f(dir.x * _speed, dir.y * _speed));
 }
+
+Bullet* Ship::shoot(sf::Vector2f dir) {
+    float radius = 2.f;
+    sf::CircleShape ret(radius);
+    ret.setOrigin(sf::Vector2f(radius / 2, radius / 2));
+    ret.setPosition(this->getPosition());
+
+    return new Bullet(ret, dir);
+}
+
+
+
+
+
+
+
+
 

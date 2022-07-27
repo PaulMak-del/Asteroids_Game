@@ -6,6 +6,7 @@ static const int POINT_AMOUNT = 6;
 Asteroid::Asteroid(AST_SIZE size) : _ast(POINT_AMOUNT) {
 	std::cout << "Asteroid() " << this << "\n";
 
+	_size = size;
 	_speed = float((6 - size) + 2 * (size / 7));
 	_dir.x = float(rand());
 	_dir.y = float(rand());
@@ -57,6 +58,9 @@ void Asteroid::move() {
 	this->Transformable::move(_dir * _speed);
 }
 
+AST_SIZE Asteroid::getSize() {
+	return _size;
+}
 
 
 

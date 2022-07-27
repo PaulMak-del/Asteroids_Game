@@ -14,6 +14,7 @@ private:
 	sf::ConvexShape _ast;
 	sf::Vector2f _dir;
 	float _speed;
+	AST_SIZE _size;
 
 	virtual void draw(sf::RenderTarget& target, const sf::RenderStates& states) const;
 	void generate();
@@ -22,5 +23,6 @@ public:
 	~Asteroid() override;
 
 	void move();
+	AST_SIZE getSize();
 };
 

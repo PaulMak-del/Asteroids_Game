@@ -3,6 +3,14 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 
+struct Bullet {
+	sf::CircleShape bul;
+	sf::Vector2f dir;
+	Bullet();
+	Bullet(const sf::CircleShape&, const sf::Vector2f&);
+	~Bullet();
+};
+
 class Ship : public sf::Drawable, public sf::Transformable
 {
 private:
@@ -14,5 +22,6 @@ private:
 public:
 	Ship();
 	void move(sf::Vector2f dir);
+	Bullet* shoot(sf::Vector2f dir);
 };
 

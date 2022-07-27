@@ -6,6 +6,10 @@
 
 #define DEBUG
 
+//using
+using std::chrono::steady_clock;
+using std::chrono::time_point;
+
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!") {
 #ifdef DEBUG
@@ -33,9 +37,15 @@ void Game::game_run()
     std::cout << "GAME_RUNING\n";
 #endif
     //Создание объектов игры
+    //Ship stuff
     Ship ship;
     ship.setPosition(sf::Vector2f(_window.getPosition().x / 2.0f, _window.getPosition().y / 2.0f));
+    std::vector<Bullet*> bullets;
+    const float BULLET_SPEED = 10.f;
+    const long long BULLET_TIMEOUT = 10;
+    long clock = 0;
 
+    //Asteroid stuff
     std::vector<Asteroid*> ast;
     AstManagement astManager = AstManagement();
     ast.push_back(astManager.create(LARGE));
@@ -49,7 +59,7 @@ void Game::game_run()
 
     while (_window.isOpen())
     {
-        //Поведение игры
+        //==============Поведение игры===================
         //ПОВОРОТ КОРАБЛЯ
         sf::Vector2i mousePos = sf::Mouse::getPosition(_window);
         sf::Vector2f shipPos = ship.getPosition();
@@ -69,8 +79,7 @@ void Game::game_run()
 
         //для астероидов (выглядит ужасно, потом перелаешь)
         const float magicOffset = 5;
-        for (int i = 0; i < ast.size(); ++i) {
-            Asteroid* el = ast[i];
+        for (auto el : ast) {
             if (el->getPosition().x < 0 - el->getScale().x * magicOffset) {
                 el->setPosition(sf::Vector2f(float(_window.getSize().x + el->getScale().x * magicOffset), el->getPosition().y));
             }
@@ -90,8 +99,32 @@ void Game::game_run()
         }
 
         //РАЗРУШЕНИЕ АСТЕРОИДОВ
-        
-        //===========================
+        //                      проверка коллизий
+        //ДВИЖЕНИЕ СНАРЯДОВ
+        for (int i = 0; i < bullets.size(); ++i) {
+            Bullet* bullet = bullets[i];
+            bullet->bul.move(bullet->dir * BULLET_SPEED);
+            float x = bullet->bul.getPosition().x;
+            float y = bullet->bul.getPosition().y;
+            if (x < 0 || x > _window.getSize().x ||
+                y < 0 || y > _window.getSize().y) {
+                delete bullets[i];
+                bullets.erase(bullets.begin() + i);
+            }
+            for (auto a : ast) {
+                int ast_size = a->getSize();
+                float top = a->getPosition().y - 5 * ast_size ;
+                float down = a->getPosition().y + 5 * ast_size;
+                float left = a->getPosition().x - 5 * ast_size ;
+                float right = a->getPosition().x + 5 * ast_size ;
+                // std::cout << "t, d, l, r: " << top << " " << down << " " << left << " " << right << std::endl;
+                if (x > left && x < right && y > top && y < down) {
+                    std::cout << "Destroy asteroid\n";
+
+                }
+            }
+        }
+        //==============================================
 
         sf::Event event;
         while (_window.pollEvent(event))
@@ -102,15 +135,27 @@ void Game::game_run()
             }
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { //Завершение игры
             _window.close();
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { //Движение корабля
             ship.move(dir);
         }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { //Создание снаряда
+            if (clock > BULLET_TIMEOUT) {
+                bullets.push_back(ship.shoot(dir));
+                clock = 0;
+            }
+        }
 
+        if (clock < BULLET_TIMEOUT + 1) {
+            clock++;
+        }
 
         _window.clear();
+        for (auto bullet : bullets) {
+            _window.draw(bullet->bul);
+        }
         _window.draw(ship);
         for (int i = 0; i < ast.size(); ++i) {
             _window.draw(*ast[i]);
