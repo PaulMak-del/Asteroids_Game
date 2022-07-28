@@ -7,9 +7,17 @@ Asteroid::Asteroid(AST_SIZE size) : _ast(POINT_AMOUNT) {
 	std::cout << "Asteroid() " << this << "\n";
 
 	_size = size;
-	_speed = float((6 - size) + 2 * (size / 7));
-	_dir.x = float(rand());
-	_dir.y = float(rand());
+	if (size == LARGE) {
+		_speed = 2;
+	}
+	else if (size == MEDIUM) {
+		_speed = 3;
+	}
+	else {
+		_speed = 4;
+	}
+	_dir.x = float(rand() - RAND_MAX / 2);
+	_dir.y = float(rand() - RAND_MAX / 2);
 	_dir = _dir.normalized();
 	generate();
 	_ast.scale(sf::Vector2f(float(size), float(size)));

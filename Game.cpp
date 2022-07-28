@@ -6,10 +6,6 @@
 
 #define DEBUG
 
-//using
-using std::chrono::steady_clock;
-using std::chrono::time_point;
-
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!") {
 #ifdef DEBUG
@@ -49,8 +45,8 @@ void Game::game_run()
     std::vector<Asteroid*> ast;
     AstManagement astManager = AstManagement();
     ast.push_back(astManager.create(LARGE));
-    ast.push_back(astManager.create(MEDIUM));
-    ast.push_back(astManager.create(SMALL));
+    ast.push_back(astManager.create(LARGE));
+    ast.push_back(astManager.create(LARGE));
 
     ast[0]->setPosition(sf::Vector2f(400, 400));
     ast[1]->setPosition(sf::Vector2f(500, 500));
@@ -99,7 +95,6 @@ void Game::game_run()
         }
 
         //ĞÀÇĞÓØÅÍÈÅ ÀÑÒÅĞÎÈÄÎÂ
-        //                      ïğîâåğêà êîëëèçèé
         //ÄÂÈÆÅÍÈÅ ÑÍÀĞßÄÎÂ
         for (int i = 0; i < bullets.size(); ++i) {
             Bullet* bullet = bullets[i];
@@ -110,17 +105,46 @@ void Game::game_run()
                 y < 0 || y > _window.getSize().y) {
                 delete bullets[i];
                 bullets.erase(bullets.begin() + i);
+                i--;
             }
-            for (auto a : ast) {
+        }
+
+        //ÏĞÎÂÅĞÊÀ ÊÎËËÈÇÈÉ
+        for (int i = 0; i < bullets.size(); ++i) {
+            for (int j = 0; j < ast.size() && i < bullets.size(); ++j) {
+                float x = bullets[i]->bul.getPosition().x;
+                float y = bullets[i]->bul.getPosition().y;
+
+                Asteroid* a = ast[j];
                 int ast_size = a->getSize();
                 float top = a->getPosition().y - 5 * ast_size ;
                 float down = a->getPosition().y + 5 * ast_size;
                 float left = a->getPosition().x - 5 * ast_size ;
                 float right = a->getPosition().x + 5 * ast_size ;
-                // std::cout << "t, d, l, r: " << top << " " << down << " " << left << " " << right << std::endl;
                 if (x > left && x < right && y > top && y < down) {
-                    std::cout << "Destroy asteroid\n";
+                    std::cout << "Destroy asteroid | " << a << "\n";
+                    delete bullets[i];
+                    bullets.erase(bullets.begin() + i);
+                    if (i > 0) {
+                        i--;
+                    }
 
+                    if (ast_size == LARGE) {
+                        ast.push_back(astManager.create(MEDIUM));
+                        ast.back()->setPosition(a->getPosition());
+                        ast.push_back(astManager.create(MEDIUM));
+                        ast.back()->setPosition(a->getPosition());
+                    }
+                    else if (ast_size == MEDIUM) {
+                        ast.push_back(astManager.create(SMALL));
+                        ast.back()->setPosition(a->getPosition());
+                        ast.push_back(astManager.create(SMALL));
+                        ast.back()->setPosition(a->getPosition());
+                    }
+
+                    delete ast[j];
+                    ast.erase(ast.begin() + j);
+                    j--;
                 }
             }
         }

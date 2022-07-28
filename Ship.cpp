@@ -4,22 +4,13 @@
 #define DEBUG
 
 Bullet::Bullet() {
-#ifdef DEBUG
-    std::cout << "Bullet::Bullet() -> " << this << "\n";
-#endif
 }
 
 Bullet::Bullet(const sf::CircleShape& shape, const sf::Vector2f& direction) 
     : bul(shape), dir(direction) {
-#ifdef DEBUG
-    std::cout << "Bullet::Bullet() -> " << this << "\n";
-#endif
 }
 
 Bullet::~Bullet() {
-#ifdef DEBUG
-    std::cout << "Bullet::~Bullet() -> " << this << "\n";
-#endif
 }
 
 void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const

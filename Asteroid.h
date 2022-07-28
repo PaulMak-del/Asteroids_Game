@@ -4,8 +4,8 @@
 
 enum AST_SIZE {
 	LARGE = 7,
-	MEDIUM = 4,
-	SMALL = 2
+	MEDIUM = 5,
+	SMALL = 3
 };
 
 class Asteroid : public sf::Drawable, public sf::Transformable
