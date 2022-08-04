@@ -6,6 +6,14 @@
 
 #define DEBUG
 
+
+//Вспомогательные функции
+/*
+bool checkCollision(sf::Transformable& ob1, sf::Transformable& ob2) {
+
+}
+*/
+
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!") {
 #ifdef DEBUG
@@ -25,6 +33,12 @@ void Game::menu() {
 #ifdef DEBUG
     std::cout << "MENU\n";
 #endif
+
+    while (true) {
+        break;
+    }
+
+    state = GAME_RUNING;
 }
 
 void Game::game_run()
@@ -40,6 +54,11 @@ void Game::game_run()
     const float BULLET_SPEED = 10.f;
     const long long BULLET_TIMEOUT = 10;
     long clock = 0;
+
+    //HP Bar
+    sf::RectangleShape hpBar(sf::Vector2f(175.f, 25.f));
+    hpBar.setFillColor(sf::Color::White);
+    hpBar.setPosition(sf::Vector2f(20.f, 20.f));
 
     //Asteroid stuff
     std::vector<Asteroid*> ast;
@@ -62,10 +81,18 @@ void Game::game_run()
         sf::Vector2f dir = (sf::Vector2f(float(mousePos.x - shipPos.x), float(mousePos.y - shipPos.y))).normalized();
         sf::Angle angle = dir.angleTo(sf::Vector2f(1.f, 0.f));
 
+        //ДВИЖЕНИЕ КОРОБЛЯ
+        ship.update();
         ship.setRotation(-angle);
+
         //"БЕСКОНЕЧНОЕ" ПОЛЕ
         //для коробля
-        ship.setPosition(sf::Vector2f(float(int(shipPos.x) % _window.getSize().x), float(int(shipPos.y) % _window.getSize().y)));
+        if (shipPos.x > _window.getSize().x) {
+            ship.setPosition(sf::Vector2f(0, shipPos.y));
+        }
+        if (shipPos.y > _window.getSize().y) {
+            ship.setPosition(sf::Vector2f(shipPos.x, 0));
+        }
         if (shipPos.x < 0) {
             ship.setPosition(sf::Vector2f(float(_window.getSize().x), shipPos.y));
         }
@@ -148,6 +175,10 @@ void Game::game_run()
                 }
             }
         }
+
+        for (int i = 0; i < ast.size(); ++i) {
+
+        }
         //==============================================
 
         sf::Event event;
@@ -163,7 +194,7 @@ void Game::game_run()
             _window.close();
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { //Движение корабля
-            ship.move(dir);
+            ship.setForceDirection(dir);
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) { //Создание снаряда
             if (clock > BULLET_TIMEOUT) {
@@ -184,6 +215,7 @@ void Game::game_run()
         for (int i = 0; i < ast.size(); ++i) {
             _window.draw(*ast[i]);
         }
+        _window.draw(hpBar);
         _window.display();
     }
     for (int i = 0; i < ast.size(); ++i) {
@@ -216,3 +248,4 @@ bool Game::isRuning()
 {
     return _window.isOpen();
 }
+

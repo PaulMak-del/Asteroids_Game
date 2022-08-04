@@ -3,14 +3,11 @@
 
 static const int POINT_AMOUNT = 6;
 
-Asteroid::Asteroid(AST_SIZE size) : _ast(POINT_AMOUNT) {
-	std::cout << "Asteroid() " << this << "\n";
-
-	_size = size;
-	if (size == LARGE) {
+Asteroid::Asteroid(AST_SIZE size) : _ast(POINT_AMOUNT), _size(size) {
+	if (_size == LARGE) {
 		_speed = 2;
 	}
-	else if (size == MEDIUM) {
+	else if (_size == MEDIUM) {
 		_speed = 3;
 	}
 	else {
@@ -51,9 +48,7 @@ void Asteroid::generate() {
 	_ast.setPoint(5, sf::Vector2f(x, y));
 }
 
-Asteroid::~Asteroid() {
-	std::cout << "~Asteroid() " << this << "\n";
-}
+Asteroid::~Asteroid() {}
 
 void Asteroid::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 {
@@ -64,6 +59,10 @@ void Asteroid::draw(sf::RenderTarget& target, const sf::RenderStates& states) co
 
 void Asteroid::move() {
 	this->Transformable::move(_dir * _speed);
+}
+
+sf::FloatRect Asteroid::getGlobalBounds() {
+	return _ast.getGlobalBounds();
 }
 
 AST_SIZE Asteroid::getSize() {

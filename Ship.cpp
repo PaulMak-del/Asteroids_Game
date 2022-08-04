@@ -3,14 +3,11 @@
 
 #define DEBUG
 
-Bullet::Bullet() {
-}
+const float MAX_SPEED = 7.f;
+const float DELTA_SPEED = 0.2f;
 
 Bullet::Bullet(const sf::CircleShape& shape, const sf::Vector2f& direction) 
     : bul(shape), dir(direction) {
-}
-
-Bullet::~Bullet() {
 }
 
 void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
@@ -32,11 +29,44 @@ Ship::Ship() {
     _ship.scale(sf::Vector2f(_size, _size));
     _ship.setFillColor(sf::Color::Black);
 
-    _speed = 5;
+    _speedX = 0;
+    _speedY = 0;
+    _dir = sf::Vector2f(0.f, 0.f);
+    _hp = 3;
 }
 
-void Ship::move(sf::Vector2f dir) {
-    this->sf::Transformable::move(sf::Vector2f(dir.x * _speed, dir.y * _speed));
+void Ship::setForceDirection(sf::Vector2f dir) {
+    _dir = dir;
+
+    if (_speedX <= MAX_SPEED && _speedX >= -MAX_SPEED) {
+        _speedX += DELTA_SPEED * _dir.x;
+    }
+    else if (_speedX < 0) {
+        _speedX = -MAX_SPEED;
+    }
+    else {
+        _speedX = MAX_SPEED;
+    }
+
+    if (_speedY <= MAX_SPEED && _speedY >= -MAX_SPEED) {
+        _speedY += DELTA_SPEED  * _dir.y;
+    }
+    else if (_speedY < 0) {
+        _speedY = -MAX_SPEED;
+    }
+    else {
+        _speedY = MAX_SPEED;
+    }
+
+}
+
+void Ship::update() {
+    this->sf::Transformable::move(sf::Vector2f(_speedX, 0.f));
+    this->sf::Transformable::move(sf::Vector2f(0.f, _speedY));
+}
+
+sf::FloatRect Ship::getGlobalBounds() {
+    return _ship.getGlobalBounds();
 }
 
 Bullet* Ship::shoot(sf::Vector2f dir) {
@@ -47,12 +77,3 @@ Bullet* Ship::shoot(sf::Vector2f dir) {
 
     return new Bullet(ret, dir);
 }
-
-
-
-
-
-
-
-
-

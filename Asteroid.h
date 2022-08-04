@@ -23,6 +23,7 @@ public:
 	~Asteroid() override;
 
 	void move();
+	sf::FloatRect getGlobalBounds();
 	AST_SIZE getSize();
 };
 
