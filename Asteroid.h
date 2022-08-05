@@ -22,8 +22,11 @@ public:
 	Asteroid(AST_SIZE size);
 	~Asteroid() override;
 
-	void move();
+	sf::Vector2f getPosition();
+	void setPosition(sf::Vector2f vec);
 	sf::FloatRect getGlobalBounds();
+
+	void move();
 	AST_SIZE getSize();
 };
 

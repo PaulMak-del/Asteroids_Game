@@ -17,12 +17,15 @@ class Game
 {
 private: 
 	sf::RenderWindow _window;
+
+	void processEvents();
+	void update();
+	void render();
 public:
 	GameState state;
 
 	Game(unsigned int width, unsigned int height);
 	~Game();
-
 	void restart();
 	void menu();
 	void game_run();

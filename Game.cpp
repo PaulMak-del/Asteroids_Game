@@ -7,13 +7,6 @@
 #define DEBUG
 
 
-//Вспомогательные функции
-/*
-bool checkCollision(sf::Transformable& ob1, sf::Transformable& ob2) {
-
-}
-*/
-
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!") {
 #ifdef DEBUG
@@ -54,6 +47,16 @@ void Game::game_run()
     const float BULLET_SPEED = 10.f;
     const long long BULLET_TIMEOUT = 10;
     long clock = 0;
+
+    auto rect = ship.getGlobalBounds();
+    std::cout << rect.top << " " << rect.left << " " << rect.height << " " << rect.width << "\n";
+
+
+    ///////////////////////////////////////////Test stuff
+    /*
+    */
+    //////////////////////////////////////////
+
 
     //HP Bar
     sf::RectangleShape hpBar(sf::Vector2f(175.f, 25.f));
@@ -177,7 +180,9 @@ void Game::game_run()
         }
 
         for (int i = 0; i < ast.size(); ++i) {
-
+            if (ship.getGlobalBounds().findIntersection(ast[i]->getGlobalBounds())) {
+                std::cout << "true ";
+            }
         }
         //==============================================
 
@@ -221,6 +226,18 @@ void Game::game_run()
     for (int i = 0; i < ast.size(); ++i) {
         delete ast[i];
     }
+}
+
+void Game::processEvents() {
+
+}
+
+void Game::update() {
+
+}
+
+void Game::render() {
+
 }
 
 void Game::game_over()

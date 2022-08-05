@@ -13,7 +13,7 @@ Bullet::Bullet(const sf::CircleShape& shape, const sf::Vector2f& direction)
 void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 {
     sf::RenderStates statesCopy(states);
-    statesCopy.transform = getTransform();
+    statesCopy.transform *= getTransform();
     target.draw(_ship, statesCopy);
 }
 
@@ -60,9 +60,23 @@ void Ship::setForceDirection(sf::Vector2f dir) {
 
 }
 
+sf::Vector2f Ship::getPosition() {
+    return _ship.getPosition();
+}
+
+void Ship::setPosition(sf::Vector2f vec) {
+    _ship.setPosition(vec);
+}
+void Ship::setPosition(float x, float y) {
+    _ship.setPosition(sf::Vector2f(x, y));
+}
+
+void Ship::setRotation(sf::Angle angle) {
+    _ship.setRotation(angle);
+}
+
 void Ship::update() {
-    this->sf::Transformable::move(sf::Vector2f(_speedX, 0.f));
-    this->sf::Transformable::move(sf::Vector2f(0.f, _speedY));
+    _ship.move(sf::Vector2f(_speedX, _speedY));
 }
 
 sf::FloatRect Ship::getGlobalBounds() {
@@ -73,7 +87,9 @@ Bullet* Ship::shoot(sf::Vector2f dir) {
     float radius = 2.f;
     sf::CircleShape ret(radius);
     ret.setOrigin(sf::Vector2f(radius / 2, radius / 2));
-    ret.setPosition(this->getPosition());
+    ret.setPosition(_ship.getPosition());
 
     return new Bullet(ret, dir);
 }
+
+

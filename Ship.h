@@ -24,7 +24,13 @@ public:
 	Ship();
 	void setForceDirection(sf::Vector2f dir);
 	void update();
+
 	sf::FloatRect getGlobalBounds();
+	sf::Vector2f getPosition();
+	void setPosition(sf::Vector2f vec);
+	void setPosition(float x, float y);
+	void setRotation(sf::Angle angle);
+
 	Bullet* shoot(sf::Vector2f dir);
 };
 

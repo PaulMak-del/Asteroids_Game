@@ -58,7 +58,15 @@ void Asteroid::draw(sf::RenderTarget& target, const sf::RenderStates& states) co
 }
 
 void Asteroid::move() {
-	this->Transformable::move(_dir * _speed);
+	_ast.move(_dir * _speed);
+}
+
+sf::Vector2f Asteroid::getPosition() {
+	return _ast.getPosition();
+}
+
+void Asteroid::setPosition(sf::Vector2f vec) {
+	_ast.setPosition(vec);
 }
 
 sf::FloatRect Asteroid::getGlobalBounds() {
@@ -68,8 +76,6 @@ sf::FloatRect Asteroid::getGlobalBounds() {
 AST_SIZE Asteroid::getSize() {
 	return _size;
 }
-
-
 
 
 
