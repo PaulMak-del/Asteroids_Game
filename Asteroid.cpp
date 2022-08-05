@@ -57,8 +57,22 @@ void Asteroid::draw(sf::RenderTarget& target, const sf::RenderStates& states) co
 	target.draw(_ast, statesCopy);
 }
 
-void Asteroid::move() {
-	_ast.move(_dir * _speed);
+void Asteroid::update(sf::RenderWindow& window) {
+	const float magicOffset = 5;
+    if (_ast.getPosition().x < 0 - _ast.getScale().x * magicOffset) {
+        _ast.setPosition(sf::Vector2f(float(window.getSize().x + _ast.getScale().x * magicOffset), _ast.getPosition().y));
+    }
+    if (_ast.getPosition().y < 0 - _ast.getScale().x * magicOffset) {
+        _ast.setPosition(sf::Vector2f(_ast.getPosition().x, float(window.getSize().y + _ast.getScale().x * magicOffset)));
+    }
+    if (_ast.getPosition().x > window.getSize().x + _ast.getScale().x * magicOffset ) {
+        _ast.setPosition(sf::Vector2f(float(_ast.getScale().x * -magicOffset ), _ast.getPosition().y));
+    }
+    if (_ast.getPosition().y > window.getSize().y + _ast.getScale().x * magicOffset ) {
+        _ast.setPosition(sf::Vector2f(_ast.getPosition().x, float(_ast.getScale().x * -magicOffset )));
+    }
+
+    _ast.move(_dir * _speed);
 }
 
 sf::Vector2f Asteroid::getPosition() {

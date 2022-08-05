@@ -6,10 +6,6 @@
 const float MAX_SPEED = 7.f;
 const float DELTA_SPEED = 0.2f;
 
-Bullet::Bullet(const sf::CircleShape& shape, const sf::Vector2f& direction) 
-    : bul(shape), dir(direction) {
-}
-
 void Ship::draw(sf::RenderTarget& target, const sf::RenderStates& states) const
 {
     sf::RenderStates statesCopy(states);
@@ -33,6 +29,10 @@ Ship::Ship() {
     _speedY = 0;
     _dir = sf::Vector2f(0.f, 0.f);
     _hp = 3;
+}
+
+sf::Vector2f Ship::getDirection() {
+    return _dir;
 }
 
 void Ship::setForceDirection(sf::Vector2f dir) {
@@ -75,15 +75,40 @@ void Ship::setRotation(sf::Angle angle) {
     _ship.setRotation(angle);
 }
 
-void Ship::update() {
-    _ship.move(sf::Vector2f(_speedX, _speedY));
+void Ship::update(sf::RenderWindow& _window) {
+    //Поворот и движение 
+    sf::Vector2i mousePos = sf::Mouse::getPosition(_window);
+    sf::Vector2f shipPos = _ship.getPosition();
+    _dir = (sf::Vector2f(float(mousePos.x - shipPos.x), float(mousePos.y - shipPos.y))).normalized();
+    sf::Angle angle = _dir.angleTo(sf::Vector2f(1.f, 0.f));
+    _ship.setRotation(-angle);
+    _ship.sf::Transformable::move(sf::Vector2f(_speedX, _speedY));
+
+    //Бесконечное поле
+    if (shipPos.x > _window.getSize().x) {
+        _ship.setPosition(sf::Vector2f(0, shipPos.y));
+    }
+    if (shipPos.y > _window.getSize().y) {
+        _ship.setPosition(sf::Vector2f(shipPos.x, 0));
+    }
+    if (shipPos.x < 0) {
+        _ship.setPosition(sf::Vector2f(float(_window.getSize().x), shipPos.y));
+    }
+    if (shipPos.y < 0) {
+        _ship.setPosition(sf::Vector2f(shipPos.x, float(_window.getSize().y)));
+    }
+    
+    //Частота стрельбы
+    if (timeSinceLastShoot < BULLET_TIMEOUT) {
+        timeSinceLastShoot++;
+    }
 }
 
 sf::FloatRect Ship::getGlobalBounds() {
     return _ship.getGlobalBounds();
 }
 
-Bullet* Ship::shoot(sf::Vector2f dir) {
+Ship::Bullet* Ship::shoot(sf::Vector2f dir) {
     float radius = 2.f;
     sf::CircleShape ret(radius);
     ret.setOrigin(sf::Vector2f(radius / 2, radius / 2));
@@ -92,4 +117,28 @@ Bullet* Ship::shoot(sf::Vector2f dir) {
     return new Bullet(ret, dir);
 }
 
+void Ship::addBullet() {
+        if (timeSinceLastShoot >= BULLET_TIMEOUT) {
+            bullets.push_back(shoot(_dir));
+            timeSinceLastShoot = 0;
+        }
+}
+
+void Ship::bulletUpdate(sf::RenderWindow& window) {
+    //Движение снарядов
+    for (int i = 0; i < bullets.size(); ++i) {
+        Ship::Bullet* bullet = bullets[i];
+        bullet->bul.move(bullet->dir * BULLET_SPEED);
+        float x = bullet->bul.getPosition().x;
+        float y = bullet->bul.getPosition().y;
+        if (x < 0 || x > window.getSize().x ||
+            y < 0 || y > window.getSize().y) {
+            delete bullets[i];
+            bullets.erase(bullets.begin() + i);
+            i--;
+        }
+    }
+
+    //Бесконечное поле
+}
 

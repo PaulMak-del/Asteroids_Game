@@ -2,6 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
+#include <vector>
+#include "Ship.h"
+#include "Asteroid.h"
+#include "AstManagement.h"
 
 enum GameState {
 	RESTART,
@@ -11,13 +15,25 @@ enum GameState {
 	GAME_OVER
 };
 
-const float SPEED = 5.f;
 
 class Game
 {
 private: 
+	//---VARIABLES
+	//Window
 	sf::RenderWindow _window;
+	
+	//Ship stuff
+	Ship ship;
 
+	//HP Bar
+    sf::RectangleShape hpBar;
+
+	//Asteroid stuff
+    std::vector<Asteroid*> ast;
+    AstManagement astManager;
+
+	//---FUNCTIONS
 	void processEvents();
 	void update();
 	void render();
