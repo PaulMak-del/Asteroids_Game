@@ -97,10 +97,13 @@ void Ship::update(sf::RenderWindow& _window) {
     if (shipPos.y < 0) {
         _ship.setPosition(sf::Vector2f(shipPos.x, float(_window.getSize().y)));
     }
-    
+
     //Частота стрельбы
-    if (timeSinceLastShoot < BULLET_TIMEOUT) {
-        timeSinceLastShoot++;
+    if (_timeSinceLastShoot < BULLET_TIMEOUT) {
+        _timeSinceLastShoot++;
+    }
+    if (_timeSinceLastDamage < 1000) {
+        _timeSinceLastDamage++;
     }
 }
 
@@ -118,9 +121,9 @@ Ship::Bullet* Ship::shoot(sf::Vector2f dir) {
 }
 
 void Ship::addBullet() {
-        if (timeSinceLastShoot >= BULLET_TIMEOUT) {
+        if (_timeSinceLastShoot >= BULLET_TIMEOUT) {
             bullets.push_back(shoot(_dir));
-            timeSinceLastShoot = 0;
+            _timeSinceLastShoot = 0;
         }
 }
 
@@ -138,7 +141,25 @@ void Ship::bulletUpdate(sf::RenderWindow& window) {
             i--;
         }
     }
-
-    //Бесконечное поле
 }
 
+sf::FloatRect Ship::Bullet::getGlobalBounds() {
+    return bul.getGlobalBounds();
+}
+
+long Ship::getLastDamageTime() {
+    return _timeSinceLastDamage;
+}
+
+void Ship::damage() {
+    std::cout << "Ouch!\n";
+    _timeSinceLastDamage = 0;
+    _hp--;
+    if (_hp <= 0) {
+        std::cout << "DEAD\n";
+    }
+}
+
+int Ship::getHP() {
+    return _hp;
+}

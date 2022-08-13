@@ -4,8 +4,7 @@
 #define DEBUG
 
 Game::Game(unsigned int width, unsigned int height) 
-    : _window(sf::VideoMode({ width, height}), "Asteroids!"),
-      hpBar(sf::Vector2f(175.f, 25.f))
+    : _window(sf::VideoMode({ width, height}), "Asteroids!")
 {
     state = MENU;
 
@@ -15,11 +14,13 @@ Game::Game(unsigned int width, unsigned int height)
 	//Ship stuff
     ship.setPosition(sf::Vector2f(_window.getPosition().x / 2.0f, _window.getPosition().y / 2.0f));
 
-	//Bullet stuff
-
 	//HP Bar
-    hpBar.setFillColor(sf::Color::White);
-    hpBar.setPosition(sf::Vector2f(20.f, 20.f));
+    for (int i = 0; i < ship.getHP(); ++i) {
+        hpBar.push_back(sf::RectangleShape());
+        hpBar[i].setSize(sf::Vector2f(60.f, 25.f));
+        hpBar[i].setFillColor(sf::Color::White);
+        hpBar[i].setPosition(sf::Vector2f(20.f + i * 63.f, 20.f));
+    }
 
 	//Asteroid stuff
     ast.push_back(astManager.create(LARGE));
@@ -39,12 +40,42 @@ Game::~Game() {
 }
 
 void Game::menu() {
-#ifdef DEBUG
     std::cout << "MENU\n";
-#endif
 
-    while (true) {
-        break;
+    sf::Font font;
+    if (!font.loadFromFile("font.ttf")) {
+        throw 12;
+    }
+    sf::Text enter;
+    enter.setFont(font);
+    enter.setString("Press Enter to Start");
+    enter.setFillColor(sf::Color::White);
+    enter.setCharacterSize(30);
+    enter.setOrigin(sf::Vector2f(enter.getGlobalBounds().width / 2,
+                                       enter.getGlobalBounds().height / 2));
+    enter.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.3f)));
+
+    while (_window.isOpen()) {
+        sf::Event event;
+        while (_window.pollEvent(event))
+        {
+            if (event.type == sf::Event::Closed) {
+                _window.close();
+                state = GAME_OVER;
+            }
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+            break;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            _window.close();
+        }
+
+        _window.clear();
+        _window.draw(enter);
+        _window.display();
     }
 
     state = GAME_RUNING;
@@ -54,7 +85,7 @@ void Game::game_run()
 {
     std::cout << "GAME_RUNING\n";
 
-    while (_window.isOpen()) {
+    while (state == GAME_RUNING) {
         processEvents();
         update();
         render();
@@ -73,7 +104,8 @@ void Game::processEvents() {
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { //Завершение игры
-        _window.close();
+        state = MENU;
+        //_window.close();
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { //Движение корабля
         ship.setForceDirection(ship.getDirection());
@@ -94,43 +126,33 @@ void Game::update()
     ship.bulletUpdate(_window);
 
     //ПРОВЕРКА КОЛЛИЗИЙ
-    //............................Изменить позже
     //Проверка коллизий между снарядами и астероидами
     for (int i = 0; i < ship.bullets.size(); ++i) {
         for (int j = 0; j < ast.size() && i < ship.bullets.size(); ++j) {
-            float x = ship.bullets[i]->bul.getPosition().x;
-            float y = ship.bullets[i]->bul.getPosition().y;
-
-            Asteroid* a = ast[j];
-            int ast_size = a->getSize();
-            float top = a->getPosition().y - 5 * ast_size ;
-            float down = a->getPosition().y + 5 * ast_size;
-            float left = a->getPosition().x - 5 * ast_size;
-            float right = a->getPosition().x + 5 * ast_size;
-            if (x > left && x < right && y > top && y < down) {
-                std::cout << "Destroy asteroid | " << a << "\n";
+            if (ast[j]->getGlobalBounds().findIntersection(ship.bullets[i]->getGlobalBounds())) {
                 delete ship.bullets[i];
                 ship.bullets.erase(ship.bullets.begin() + i);
                 if (i > 0) {
                     i--;
                 }
 
-                if (ast_size == LARGE) {
+                if (ast[j]->getSize() == LARGE) {
                     ast.push_back(astManager.create(MEDIUM));
-                    ast.back()->setPosition(a->getPosition());
+                    ast.back()->setPosition(ast[j]->getPosition());
                     ast.push_back(astManager.create(MEDIUM));
-                    ast.back()->setPosition(a->getPosition());
+                    ast.back()->setPosition(ast[j]->getPosition());
                 }
-                else if (ast_size == MEDIUM) {
+                else if (ast[j]->getSize() == MEDIUM) {
                     ast.push_back(astManager.create(SMALL));
-                    ast.back()->setPosition(a->getPosition());
+                    ast.back()->setPosition(ast[j]->getPosition());
                     ast.push_back(astManager.create(SMALL));
-                    ast.back()->setPosition(a->getPosition());
+                    ast.back()->setPosition(ast[j]->getPosition());
                 }
 
                 delete ast[j];
                 ast.erase(ast.begin() + j);
                 j--;
+                
             }
         }
     }
@@ -139,6 +161,9 @@ void Game::update()
     for (int i = 0; i < ast.size(); ++i) {
         if (ship.getGlobalBounds().findIntersection(ast[i]->getGlobalBounds())) {
             std::cout << "true ";
+            if (ship.getLastDamageTime() > 100) {
+                ship.damage();
+            }
         }
     }
 }
@@ -152,7 +177,9 @@ void Game::render() {
     for (int i = 0; i < ast.size(); ++i) {
         _window.draw(*ast[i]);
     }
-    _window.draw(hpBar);
+    for (int i = 0; i < ship.getHP(); ++i) {
+        _window.draw(hpBar[i]);
+    }
     _window.display();
 }
 

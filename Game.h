@@ -27,7 +27,7 @@ private:
 	Ship ship;
 
 	//HP Bar
-    sf::RectangleShape hpBar;
+    std::vector<sf::RectangleShape> hpBar;
 
 	//Asteroid stuff
     std::vector<Asteroid*> ast;
