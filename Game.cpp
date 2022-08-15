@@ -6,30 +6,20 @@
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!")
 {
+    _window.setKeyRepeatEnabled(false);
     state = MENU;
 
-    //Window
-    _window.setVerticalSyncEnabled(true);
+    //Menu initialisation
+    menuInit(); // Здусь загружается Font, поэтому всегда должна вызываться первой
 
-	//Ship stuff
-    ship.setPosition(sf::Vector2f(_window.getPosition().x / 2.0f, _window.getPosition().y / 2.0f));
+    //Game initialisation
+    //gameInit();    //Запускается каждый раз при запуски игры из меню 
 
-	//HP Bar
-    for (int i = 0; i < ship.getHP(); ++i) {
-        hpBar.push_back(sf::RectangleShape());
-        hpBar[i].setSize(sf::Vector2f(60.f, 25.f));
-        hpBar[i].setFillColor(sf::Color::White);
-        hpBar[i].setPosition(sf::Vector2f(20.f + i * 63.f, 20.f));
-    }
+    //Pause initialisation
+    pauseInit();
 
-	//Asteroid stuff
-    ast.push_back(astManager.create(LARGE));
-    ast.push_back(astManager.create(LARGE));
-    ast.push_back(astManager.create(LARGE));
-
-    ast[0]->setPosition(sf::Vector2f(400, 400));
-    ast[1]->setPosition(sf::Vector2f(500, 500));
-    ast[2]->setPosition(sf::Vector2f(600, 600));
+    //GameOver initialisation
+    gameOverInit();
 }
 
 Game::~Game() {
@@ -39,60 +29,140 @@ Game::~Game() {
     }
 }
 
-void Game::menu() {
-    std::cout << "MENU\n";
-
-    sf::Font font;
-    if (!font.loadFromFile("font.ttf")) {
-        throw 12;
-    }
-    sf::Text enter;
-    enter.setFont(font);
-    enter.setString("Press Enter to Start");
-    enter.setFillColor(sf::Color::White);
-    enter.setCharacterSize(30);
-    enter.setOrigin(sf::Vector2f(enter.getGlobalBounds().width / 2,
-                                       enter.getGlobalBounds().height / 2));
-    enter.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
-                                          static_cast<float>(_window.getSize().y * 0.3f)));
-
-    while (_window.isOpen()) {
-        sf::Event event;
-        while (_window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed) {
-                _window.close();
-                state = GAME_OVER;
-            }
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
-            break;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-            _window.close();
-        }
-
-        _window.clear();
-        _window.draw(enter);
-        _window.display();
-    }
-
-    state = GAME_RUNING;
-}
-
 void Game::game_run()
 {
     std::cout << "GAME_RUNING\n";
 
-    while (state == GAME_RUNING) {
-        processEvents();
-        update();
-        render();
+    while (_window.isOpen()) {
+        switch (state) {
+        case MENU:
+            menuProcessEvents();
+            menuUpdate();
+            menuRender();
+            break;
+        case GAME_RUNING:
+            gameProcessEvents();
+            gameUpdate();
+            gameRender();
+            break;
+        case GAME_OVER:
+            gameOverProcessEvents();
+            gameOverUpdate();
+            gameRender(); // Состояние паузы учитывается внутри этой функции
+            //gameOverRender();
+            break;
+        case PAUSE:
+            pauseProcessEvents();
+            pauseUpdate();
+            gameRender(); // Состояние паузы учитывается внутри этой функции
+            //pauseRender();
+            break;
+        default:
+            std::cout << "INCORRECT STATE\n";
+        }
     }
 }
 
-void Game::processEvents() {
+//=====================MENU==============================
+void Game::menuProcessEvents() {
+    sf::Event event;
+    while (_window.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed) {
+            _window.close();
+            state = GAME_OVER;
+        }
+
+        if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Escape) {
+                _window.close();
+            }
+            if (event.key.code == sf::Keyboard::Enter) {
+                //Выход из меню и переход в состояние игры
+                state = GAME_RUNING;
+                gameInit();
+            }
+        }
+    }
+}
+
+void Game::menuUpdate()
+{
+}
+
+void Game::menuRender() {
+    _window.clear();
+    _window.draw(_menuHelpText);
+    _window.draw(_menuText);
+    _window.display();
+}
+//========================================================
+
+//=========================PAUSE==========================
+void Game::pauseProcessEvents() {
+    sf::Event event;
+    while (_window.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed) {
+            _window.close();
+            state = GAME_OVER;
+        }
+
+        if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Escape) {
+                state = GAME_RUNING;
+            }
+
+            if (event.key.code == sf::Keyboard::Backspace) {
+                state = MENU;
+            }
+        }
+    }
+
+
+}
+
+void Game::pauseUpdate() {
+
+}
+
+void Game::pauseRender() {
+    gameRender();
+}
+//========================================================
+
+//=======================GAMEOVER=========================
+void Game::gameOverProcessEvents() {
+    sf::Event event;
+    while (_window.pollEvent(event))
+    {
+        if (event.type == sf::Event::Closed) {
+            _window.close();
+        }
+
+        if (event.type == sf::Event::KeyPressed) {
+            if (event.key.code == sf::Keyboard::Escape) {
+                state = MENU;
+            }
+            if (event.key.code == sf::Keyboard::Enter) {
+                state = GAME_RUNING;
+                gameInit();
+            }
+        }
+    }
+}
+
+void Game::gameOverUpdate() {
+
+}
+
+void Game::gameOverRender() {
+    gameRender();
+}
+//===========================================================
+
+//========================GAME===============================
+void Game::gameProcessEvents() {
     sf::Event event;
 
     while (_window.pollEvent(event))
@@ -101,12 +171,12 @@ void Game::processEvents() {
             _window.close();
             state = GAME_OVER;
         }
+
+        if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+            state = PAUSE;
+        }
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) { //Завершение игры
-        state = MENU;
-        //_window.close();
-    }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) { //Движение корабля
         ship.setForceDirection(ship.getDirection());
     }
@@ -115,7 +185,7 @@ void Game::processEvents() {
     }
 }
 
-void Game::update() 
+void Game::gameUpdate() 
 {
     ship.update(_window);
 
@@ -163,12 +233,15 @@ void Game::update()
             std::cout << "true ";
             if (ship.getLastDamageTime() > 100) {
                 ship.damage();
+                if (ship.getHP() <= 0) {
+                    state = GAME_OVER;
+                }
             }
         }
     }
 }
 
-void Game::render() {
+void Game::gameRender() {
     _window.clear();
     for (auto bullet : ship.bullets) {
         _window.draw(bullet->bul);
@@ -180,32 +253,112 @@ void Game::render() {
     for (int i = 0; i < ship.getHP(); ++i) {
         _window.draw(hpBar[i]);
     }
+    if (state == PAUSE) {
+        _window.draw(_background);
+        _window.draw(_pauseText);
+        _window.draw(_pauseHelpText);
+    }
+    if (state == GAME_OVER) {
+        _window.draw(_background);
+        _window.draw(_gameOverText);
+        _window.draw(_gameOverHelpText);
+    }
     _window.display();
 }
+//===========================================================
 
-void Game::game_over()
-{
-#ifndef DEBUG
-    std::cout << "GAME_OVER\n";
-#endif
+void Game::menuInit() {
+    if (!_font.loadFromFile("font.ttf")) {
+        throw 12;
+    }
+
+    _menuText.setFont(_font);
+    _menuText.setString("MENU");
+    _menuText.setFillColor(sf::Color::White);
+    _menuText.setCharacterSize(50);
+    _menuText.setOrigin(sf::Vector2f(_menuText.getGlobalBounds().width / 2,
+                                           _menuText.getGlobalBounds().height / 2));
+    _menuText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.2f)));
+
+    _menuHelpText.setFont(_font);
+    _menuHelpText.setString("\"Enter\" to start \n\"ESC\" to exit");
+    _menuHelpText.setFillColor(sf::Color::White);
+    _menuHelpText.setCharacterSize(30);
+    _menuHelpText.setOrigin(sf::Vector2f(_menuHelpText.getGlobalBounds().width / 2,
+                                       _menuHelpText.getGlobalBounds().height / 2));
+    _menuHelpText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.3f)));
 }
 
-void Game::pause()
-{
-#ifdef DEBUG
-    std::cout << "PAUSE\n";
-#endif
+void Game::gameInit() {
+    //Window
+    _window.setVerticalSyncEnabled(true);
+
+	//Ship stuff
+    ship.init(_window);
+
+	//HP Bar
+    for (int i = 0; i < ship.getHP(); ++i) {
+        hpBar.push_back(sf::RectangleShape());
+        hpBar[i].setSize(sf::Vector2f(60.f, 25.f));
+        hpBar[i].setFillColor(sf::Color::White);
+        hpBar[i].setPosition(sf::Vector2f(20.f + i * 63.f, 20.f));
+    }
+
+	//Asteroid stuff
+    for (auto el : ast) {
+        delete el;
+    }
+    ast.clear();
+    ast.push_back(astManager.create(LARGE));
+    ast.push_back(astManager.create(LARGE));
+    ast.push_back(astManager.create(LARGE));
+
+    int wsx = _window.getSize().x;
+    int wsy = _window.getSize().y;
+    ast[0]->setPosition(sf::Vector2f(wsx * 0.125f, wsy * 0.125f));
+    ast[1]->setPosition(sf::Vector2f(wsx * 0.875f, wsy * 0.125f));
+    ast[2]->setPosition(sf::Vector2f(wsx * 0.125f, wsy * 0.875f));
 }
 
-void Game::restart()
-{
-#ifdef DEBUG
-    std::cout << "RESTART\n";
-#endif
+void Game::pauseInit() {
+    _pauseText.setFont(_font);
+    _pauseText.setString("PAUSE");
+    _pauseText.setFillColor(sf::Color::White);
+    _pauseText.setCharacterSize(50);
+    _pauseText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.03f),
+                                          static_cast<float>(_window.getSize().y * 0.8f)));
+
+    _pauseHelpText.setFont(_font);
+    _pauseHelpText.setString("\"ESC\" to continue\n\"Backspace\" to exit");
+    _pauseHelpText.setFillColor(sf::Color::White);
+    _pauseHelpText.setCharacterSize(30);
+    _pauseHelpText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.03f),
+                                          static_cast<float>(_window.getSize().y * 0.9f)));
+
+    float x = static_cast<float>(_window.getSize().x);
+    float y = static_cast<float>(_window.getSize().y);
+    _background = sf::RectangleShape(sf::Vector2f(x, y));
+    _background.setFillColor(sf::Color(0, 0, 0, 170));
 }
 
-bool Game::isRuning() 
-{
-    return _window.isOpen();
-}
+void Game::gameOverInit() {
+    _gameOverText.setFont(_font);
+    _gameOverText.setString("GAME OVER");
+    _gameOverText.setFillColor(sf::Color::White);
+    _gameOverText.setCharacterSize(70);
+    _gameOverText.setOrigin(sf::Vector2f(_gameOverText.getGlobalBounds().width / 2,
+                                         _gameOverText.getGlobalBounds().height / 2));
+    _gameOverText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.2f)));
 
+    _gameOverHelpText.setFont(_font);
+    _gameOverHelpText.setString("\"ESC\" to exit\n\"ENTER\" to restart");
+    _gameOverHelpText.setFillColor(sf::Color::White);
+    _gameOverHelpText.setCharacterSize(30);
+    _gameOverHelpText.setOrigin(sf::Vector2f(_gameOverHelpText.getGlobalBounds().width / 2,
+                                             _gameOverHelpText.getGlobalBounds().height / 2));
+    _gameOverHelpText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.3f)));
+}

@@ -31,6 +31,7 @@ public:
 	long getLastDamageTime();
 	void damage();
 	int getHP();
+	void init(sf::RenderWindow& win);
 
 private:
 	const float BULLET_SPEED = 10.f;

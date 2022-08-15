@@ -163,3 +163,14 @@ void Ship::damage() {
 int Ship::getHP() {
     return _hp;
 }
+
+void Ship::init(sf::RenderWindow& win) {
+    _hp = 3;
+    _speedX = 0;
+    _speedY = 0;
+    setPosition(sf::Vector2f(win.getSize().x * 0.5f, win.getSize().y * 0.5f));
+    for (auto el : bullets) {
+        delete el;
+    }
+    bullets.clear();
+}

@@ -20,6 +20,19 @@ class Game
 {
 private: 
 	//---VARIABLES
+	//Text stuff
+	sf::Font _font;
+	//Menu 
+	sf::Text _menuText;
+	sf::Text _menuHelpText;
+	//Pause
+	sf::Text _pauseText;
+	sf::Text _pauseHelpText;
+	sf::RectangleShape _background;
+	//GameOver
+	sf::Text _gameOverText;
+	sf::Text _gameOverHelpText;
+
 	//Window
 	sf::RenderWindow _window;
 	
@@ -34,21 +47,32 @@ private:
     AstManagement astManager;
 
 	//---FUNCTIONS
-	void processEvents();
-	void update();
-	void render();
+	void menuProcessEvents();
+	void gameProcessEvents();
+	void gameOverProcessEvents();
+	void pauseProcessEvents();
+
+	void menuUpdate();
+	void gameUpdate();
+	void gameOverUpdate();
+	void pauseUpdate();
+
+	void menuRender();
+	void gameRender();
+	void gameOverRender();
+	void pauseRender();
+
+	void menuInit();
+	void gameInit();
+	void pauseInit();
+	void gameOverInit();
+	
 public:
 	GameState state;
 
 	Game(unsigned int width, unsigned int height);
 	~Game();
-	void restart();
-	void menu();
 	void game_run();
-	void game_over();
-	void pause();
-
-	bool isRuning();
 };
 
 
