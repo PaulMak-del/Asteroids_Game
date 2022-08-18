@@ -32,6 +32,12 @@ private:
 	//GameOver
 	sf::Text _gameOverText;
 	sf::Text _gameOverHelpText;
+	sf::Text _gameOverFinalScore;
+	sf::String _playerInput;
+	sf::Text _playerText;
+	//Score
+	sf::Text _scoreText;
+	int _score;
 
 	//Window
 	sf::RenderWindow _window;
@@ -45,6 +51,9 @@ private:
 	//Asteroid stuff
     std::vector<Asteroid*> ast;
     AstManagement astManager;
+	//Spawn flag
+	int _scoreLeftBeforeSpawn;
+	const int SCORE_THRESHOLD = 15;
 
 	//---FUNCTIONS
 	void menuProcessEvents();

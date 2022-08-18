@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Game.h"
+#include <fstream>
 
 #define DEBUG
 
@@ -149,11 +150,28 @@ void Game::gameOverProcessEvents() {
                 gameInit();
             }
         }
+
+        if (event.type == sf::Event::TextEntered) {
+            if (event.text.unicode == '\b') {
+                if (!_playerInput.isEmpty()) {
+                    _playerInput.erase(_playerInput.getSize() - 1);
+                }
+            }
+            else {
+                _playerInput += event.text.unicode;
+            }
+            _playerText.setString("Enter your name: " + _playerInput);
+        }
     }
 }
 
 void Game::gameOverUpdate() {
+    _gameOverFinalScore.setString("Your score: " + std::to_string(_score));
+    _gameOverFinalScore.setOrigin(sf::Vector2f(_gameOverFinalScore.getGlobalBounds().width / 2,
+                                         _gameOverFinalScore.getGlobalBounds().height / 2));
 
+    _playerText.setOrigin(sf::Vector2f(_playerText.getGlobalBounds().width / 2,
+                                       _playerText.getGlobalBounds().height / 2));
 }
 
 void Game::gameOverRender() {
@@ -211,12 +229,31 @@ void Game::gameUpdate()
                     ast.back()->setPosition(ast[j]->getPosition());
                     ast.push_back(astManager.create(MEDIUM));
                     ast.back()->setPosition(ast[j]->getPosition());
+                    //Score up
+                    _score += 1;
+                    _scoreLeftBeforeSpawn += 1;
                 }
                 else if (ast[j]->getSize() == MEDIUM) {
                     ast.push_back(astManager.create(SMALL));
                     ast.back()->setPosition(ast[j]->getPosition());
                     ast.push_back(astManager.create(SMALL));
                     ast.back()->setPosition(ast[j]->getPosition());
+                    //Score up
+                    _score += 2;
+                    _scoreLeftBeforeSpawn += 2;
+                }
+                else {
+                    //Score up
+                    _score += 3;
+                    _scoreLeftBeforeSpawn += 3;
+
+                }
+
+                //Score update 
+                _scoreText.setString("SCORE: " + std::to_string(_score));
+                if (_scoreLeftBeforeSpawn > SCORE_THRESHOLD) {
+                    ast.push_back(astManager.create(LARGE));
+                    _scoreLeftBeforeSpawn -= SCORE_THRESHOLD;
                 }
 
                 delete ast[j];
@@ -243,16 +280,23 @@ void Game::gameUpdate()
 
 void Game::gameRender() {
     _window.clear();
+
     for (auto bullet : ship.bullets) {
         _window.draw(bullet->bul);
     }
+
     _window.draw(ship);
+
     for (int i = 0; i < ast.size(); ++i) {
         _window.draw(*ast[i]);
     }
+
     for (int i = 0; i < ship.getHP(); ++i) {
         _window.draw(hpBar[i]);
     }
+
+    _window.draw(_scoreText);
+
     if (state == PAUSE) {
         _window.draw(_background);
         _window.draw(_pauseText);
@@ -261,6 +305,8 @@ void Game::gameRender() {
     if (state == GAME_OVER) {
         _window.draw(_background);
         _window.draw(_gameOverText);
+        _window.draw(_gameOverFinalScore);
+        _window.draw(_playerText);
         _window.draw(_gameOverHelpText);
     }
     _window.display();
@@ -271,6 +317,13 @@ void Game::menuInit() {
     if (!_font.loadFromFile("font.ttf")) {
         throw 12;
     }
+
+    //Score text
+    _scoreText.setFont(_font);
+    _scoreText.setString("SCORE: 0");
+    _scoreText.setFillColor(sf::Color::White);
+    _scoreText.setCharacterSize(30);
+    _scoreText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.7f), 0.f));
 
     _menuText.setFont(_font);
     _menuText.setString("MENU");
@@ -306,20 +359,20 @@ void Game::gameInit() {
         hpBar[i].setPosition(sf::Vector2f(20.f + i * 63.f, 20.f));
     }
 
+    //Score
+    _score = 0;
+    _scoreLeftBeforeSpawn = 0;
+
 	//Asteroid stuff
     for (auto el : ast) {
         delete el;
     }
     ast.clear();
     ast.push_back(astManager.create(LARGE));
-    ast.push_back(astManager.create(LARGE));
-    ast.push_back(astManager.create(LARGE));
 
     int wsx = _window.getSize().x;
     int wsy = _window.getSize().y;
     ast[0]->setPosition(sf::Vector2f(wsx * 0.125f, wsy * 0.125f));
-    ast[1]->setPosition(sf::Vector2f(wsx * 0.875f, wsy * 0.125f));
-    ast[2]->setPosition(sf::Vector2f(wsx * 0.125f, wsy * 0.875f));
 }
 
 void Game::pauseInit() {
@@ -344,6 +397,24 @@ void Game::pauseInit() {
 }
 
 void Game::gameOverInit() {
+    _playerText.setFont(_font);
+    _playerText.setString("Enter your name: ");
+    _playerText.setFillColor(sf::Color::White);
+    _playerText.setCharacterSize(30);
+    _playerText.setOrigin(sf::Vector2f(_playerText.getGlobalBounds().width / 2,
+                                       _playerText.getGlobalBounds().height / 2));
+    _playerText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.4f)));
+
+    _gameOverFinalScore.setFont(_font);
+    _gameOverFinalScore.setString("Your score: " + std::to_string(_score));
+    _gameOverFinalScore.setFillColor(sf::Color::White);
+    _gameOverFinalScore.setCharacterSize(50);
+    _gameOverFinalScore.setOrigin(sf::Vector2f(_gameOverFinalScore.getGlobalBounds().width / 2,
+                                         _gameOverFinalScore.getGlobalBounds().height / 2));
+    _gameOverFinalScore.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
+                                          static_cast<float>(_window.getSize().y * 0.3f)));
+
     _gameOverText.setFont(_font);
     _gameOverText.setString("GAME OVER");
     _gameOverText.setFillColor(sf::Color::White);
@@ -360,5 +431,5 @@ void Game::gameOverInit() {
     _gameOverHelpText.setOrigin(sf::Vector2f(_gameOverHelpText.getGlobalBounds().width / 2,
                                              _gameOverHelpText.getGlobalBounds().height / 2));
     _gameOverHelpText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
-                                          static_cast<float>(_window.getSize().y * 0.3f)));
+                                          static_cast<float>(_window.getSize().y * 0.5f)));
 }
