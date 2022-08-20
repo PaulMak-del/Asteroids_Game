@@ -4,6 +4,9 @@
 
 #define DEBUG
 
+void saveScore(sf::String player, int currentScore);
+void replaceLine(std::string fileName, std::string oldStr, std::string newStr);
+
 Game::Game(unsigned int width, unsigned int height) 
     : _window(sf::VideoMode({ width, height}), "Asteroids!")
 {
@@ -14,7 +17,7 @@ Game::Game(unsigned int width, unsigned int height)
     menuInit(); // Здусь загружается Font, поэтому всегда должна вызываться первой
 
     //Game initialisation
-    //gameInit();    //Запускается каждый раз при запуски игры из меню 
+    //gameInit();    //Запускается каждый раз при запуске игры из меню 
 
     //Pause initialisation
     pauseInit();
@@ -143,9 +146,11 @@ void Game::gameOverProcessEvents() {
 
         if (event.type == sf::Event::KeyPressed) {
             if (event.key.code == sf::Keyboard::Escape) {
+                saveScore(_playerInput, _score);
                 state = MENU;
             }
             if (event.key.code == sf::Keyboard::Enter) {
+                saveScore(_playerInput, _score);
                 state = GAME_RUNING;
                 gameInit();
             }
@@ -156,6 +161,9 @@ void Game::gameOverProcessEvents() {
                 if (!_playerInput.isEmpty()) {
                     _playerInput.erase(_playerInput.getSize() - 1);
                 }
+            }
+            else if (_playerInput.getSize() > 20) {
+                std::cout << "Too much characters\n";
             }
             else {
                 _playerInput += event.text.unicode;
@@ -432,4 +440,72 @@ void Game::gameOverInit() {
                                              _gameOverHelpText.getGlobalBounds().height / 2));
     _gameOverHelpText.setPosition(sf::Vector2f(static_cast<float>(_window.getSize().x * 0.5f),
                                           static_cast<float>(_window.getSize().y * 0.5f)));
+}
+
+void saveScore(sf::String player, int currentScore) {
+    std::cout << "player: " << player.toAnsiString() << " score: " << currentScore << "\n";
+    if (player == "") {
+        return;
+    }
+    std::string line;
+    std::ifstream fin("userScore.txt", std::ios::in);
+    if (!fin.is_open()) {
+        std::cout << "File is not open\n";
+    }
+
+    while (getline(fin, line)) {
+        //Найти игрока с нужным именем
+        sf::String name = line.substr(0, line.find(' '));
+        //std::cout << name.toAnsiString() << '\n';
+        if (name == player) {
+            int userScore = std::stoi(line.substr(line.find(' ')));
+            if (userScore < currentScore) {
+                //Заменить счёт игрока
+                std::string newString = name + ' ' + std::to_string(currentScore) + '\n';
+                replaceLine("userScore.txt", line, newString);
+            }
+            fin.close();
+            return;
+        }
+    }
+    fin.close();
+
+    std::ofstream fout;
+    fout.open("userScore.txt", std::ios::out | std::ios::app);
+    if (!fout.is_open()) {
+        std::cout << "File is not open\n";
+    }
+
+    std::string user = player + ' ' + std::to_string(currentScore);
+    fout << user;
+    fout.close();
+}
+
+void replaceLine(std::string fileName, std::string oldStr, std::string newStr) {
+    std::ifstream fin(fileName);
+    std::vector<std::string> buf;
+    std::string line;
+    bool isFind = false;
+    if (!fin.is_open()) {
+        std::cout << "File is not open\n";
+    }
+    while (getline(fin, line)) {
+        if (line == oldStr) {
+            buf.push_back(newStr);
+            isFind = true;
+        }
+        else {
+            buf.push_back(line + '\n');
+        }
+    }
+    fin.close();
+
+    if (isFind) {
+        std::ofstream fout(fileName);
+        while (!buf.empty()) {
+            fout << buf.back();
+            buf.pop_back();
+        }
+        fout.close();
+    }
 }
